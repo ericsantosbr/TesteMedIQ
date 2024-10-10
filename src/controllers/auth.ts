@@ -53,5 +53,5 @@ AuthRouter.post('/register', async (c) => {
         return c.text('Error registering user. ' + registrationResult.detail, 400);
     }
 
-    return c.text('lul');
+    return c.text('Registration successful');
 });

@@ -23,7 +23,6 @@ export const verifyAuthenticatedUser = bearerAuth({ verifyToken: async (token, c
     .connect();
     
     const foundKey = await client.get(token);
-    console.log(JSON.stringify(foundKey));
     
     // If left value is undefined or null, it evaluates to the value on its right
     if (foundKey ?? false) {
