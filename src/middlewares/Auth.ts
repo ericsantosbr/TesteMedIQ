@@ -14,9 +14,25 @@ export const verifyAuthenticatedUser = bearerAuth({ verifyToken: async (token, c
         c.set('userID', parsedFoundKeyData.id);
         c.set('username', parsedFoundKeyData.username);
         c.set('userEmail', parsedFoundKeyData.email);
+        c.set('privileges', parsedFoundKeyData.privileges);
 
         return true;
     } else {
         return false;
     }
+}});
+
+export const verifyAdminAuthenticated = bearerAuth({ verifyToken: async (token, c) => {
+    const foundKeyData = await fetchBearerTokenFromAuthServer(token);
+    
+    // If left value is undefined or null, it evaluates to the value on its right
+    if (!!foundKeyData) {
+        const parsedFoundKeyData = JSON.parse(foundKeyData);
+
+        if (parsedFoundKeyData.privileges === 'ADMIN') {
+            return true;
+        }
+    }
+
+    return false;
 }});

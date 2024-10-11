@@ -1,12 +1,13 @@
 import { DiscussionData, DiscussionPostData, fetchPostResponse, getPostResponses, GroupData, modifyPostResponse, uploadDiscussion, uploadDiscussionPost, uploadNewGroup } from "../helpers/DBHelpers";
 import { Hono } from "hono";
 import { jsonDiscussionPostValidator, jsonDiscussionValidator } from "../helpers/Validators";
-import { verifyAuthenticatedUser } from "../middlewares/Auth";
+import { verifyAdminAuthenticated, verifyAuthenticatedUser } from "../middlewares/Auth";
 
 type HonoVariables = {
     userID: number;
     userEmail: string;
     username: string;
+    privileges: string;
   }
 
 export const app = new Hono<{ Variables: HonoVariables }>();
@@ -22,13 +23,12 @@ app.post('/createPost', verifyAuthenticatedUser,jsonDiscussionValidator, async (
     }
 
     const uploadResult = await uploadDiscussion(discussionData);
-    console.debug(uploadResult);
-
     
-    return c.text('Teste', 200);
+    return c.json(uploadResult, 200);
 });
 
-app.post('/createGroup/:groupName', verifyAuthenticatedUser, async (c) => {
+// Only admins can create new discussion groups
+app.post('/createGroup/:groupName', verifyAdminAuthenticated, async (c) => {
     const groupName = c.req.param('groupName');
 
     const groupData: GroupData = {
@@ -56,7 +56,10 @@ app.patch('/modifyPostResponse', verifyAuthenticatedUser, jsonDiscussionPostVali
     const postResponseData = await fetchPostResponse(requestBody.postID);
 
     let result;
-    if (!!postResponseData && postResponseData.length > 0 && postResponseData[0].user_id === Number(c.get('userID'))) {
+    if (
+        (!!postResponseData && postResponseData.length > 0 && postResponseData[0].user_id === Number(c.get('userID'))) ||
+        (c.get('privileges') === 'MODERATOR' || c.get('privileges') === 'ADMIN')
+    ) {
         result = modifyPostResponse(Number(requestBody.postID), requestBody.message);
 
         return c.json(result);

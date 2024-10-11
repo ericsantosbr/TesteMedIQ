@@ -21,7 +21,7 @@ export interface GroupData {
 
 export async function fetchUserAuthData (email: string) {
     const foundValue = await db.selectFrom('MedIQ.users')
-        .select(['id', 'email', 'username', 'password'])
+        .select(['id', 'email', 'username', 'password', 'privileges'])
         .where('email', '=', email)
         .execute();
         
@@ -36,7 +36,8 @@ export async function uploadNewUser (userData: UserData) {
             email: userData.email,
             password: userData.password,
             created_at: new Date(Date.now()).toISOString(),
-            updated_at: new Date(Date.now()).toISOString()
+            updated_at: new Date(Date.now()).toISOString(),
+            privileges: 'USER'
         })
         .execute()
         .catch((e) => {
@@ -72,6 +73,7 @@ export async function uploadDiscussion (discussionData: DiscussionData) {
             created_at: new Date(Date.now()).toISOString(),
             updated_at: new Date(Date.now()).toISOString()
         })
+        .returning(['id', 'title', 'created_at', 'group_id'])
         .execute();
 
     return uploadResult;

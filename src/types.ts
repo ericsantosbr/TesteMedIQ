@@ -51,6 +51,7 @@ export interface MedIQUsers {
   password: string;
   updated_at: Timestamp;
   username: string;
+  privileges: string;
 }
 
 export type User = Selectable<MedIQUsers>;

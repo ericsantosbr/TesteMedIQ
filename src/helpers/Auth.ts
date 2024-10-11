@@ -67,7 +67,8 @@ export const authenticateUser = basicAuth({verifyUser: async (username, password
             const bearerData = {
                 id: userFetchedData[0].id,
                 email: userFetchedData[0].email,
-                username: userFetchedData[0].username
+                username: userFetchedData[0].username,
+                privileges: userFetchedData[0].privileges
             }
             
             const bearerToken = uuidv4();
