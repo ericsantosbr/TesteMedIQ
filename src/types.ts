@@ -23,6 +23,7 @@ export interface MedIQDiscussionPosts {
   message: string;
   updated_at: Timestamp | null;
   user_id: Generated<number>;
+  post_id: Generated<number>;
 }
 
 export type DiscussionPost = Selectable<MedIQDiscussionPosts>;
@@ -34,6 +35,7 @@ export interface MedIQDiscussions {
   id: Generated<number>;
   message: string;
   owner_id: Generated<number>;
+  group_id: Generated<number>;
   title: string;
   updated_at: Timestamp;
 }
@@ -55,8 +57,21 @@ export type User = Selectable<MedIQUsers>;
 export type NewUser = Insertable<MedIQUsers>;
 export type UserUpdate = Updateable<MedIQUsers>;
 
+export interface MedIQGroups {
+    created_at: Timestamp;
+    id: Generated<number>;
+    creator_id: number;
+    updated_at: Timestamp;
+    name: string;
+}
+
+export type Group = Selectable<MedIQGroups>;
+export type NewGroup = Insertable<MedIQGroups>;
+export type GroupUpdate = Updateable<MedIQGroups>;
+
 export interface DB {
   "MedIQ.discussion_posts": MedIQDiscussionPosts;
   "MedIQ.discussions": MedIQDiscussions;
   "MedIQ.users": MedIQUsers;
+  "MedIQ.groups": MedIQGroups;
 }

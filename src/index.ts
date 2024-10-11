@@ -3,6 +3,7 @@ import { Hono } from 'hono';
 import { config } from 'dotenv';
 import { verifyAuthenticatedUser } from './middlewares/Auth';
 import { AuthRouter } from './controllers/auth';
+import { app as DiscussionsRouter } from './controllers/discussions';
 
 config();
 
@@ -17,6 +18,7 @@ app.get('/', verifyAuthenticatedUser, (c) => {
 });
 
 app.route('/auth', AuthRouter);
+app.route('/posts', DiscussionsRouter);
 
 const port = Number(process.env.ENGINE_PORT) || 3000;
 
