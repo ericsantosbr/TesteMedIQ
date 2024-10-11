@@ -4,6 +4,7 @@ import { config } from 'dotenv';
 import { verifyAuthenticatedUser } from './middlewares/Auth';
 import { AuthRouter } from './controllers/auth';
 import { app as DiscussionsRouter } from './controllers/discussions';
+import { app as UsersRouter } from './controllers/users';
 
 config();
 
@@ -25,6 +26,7 @@ app.get('/', verifyAuthenticatedUser, (c) => {
 
 app.route('/auth', AuthRouter);
 app.route('/posts', DiscussionsRouter);
+app.route('/users', UsersRouter);
 
 const port = Number(process.env.ENGINE_PORT) || 3000;
 

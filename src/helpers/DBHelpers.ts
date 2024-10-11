@@ -37,7 +37,8 @@ export async function uploadNewUser (userData: UserData) {
             password: userData.password,
             created_at: new Date(Date.now()).toISOString(),
             updated_at: new Date(Date.now()).toISOString(),
-            privileges: 'USER'
+            privileges: 'USER',
+            is_active: true
         })
         .execute()
         .catch((e) => {
@@ -150,6 +151,27 @@ export async function deletePostResponseLogically (postID: number) {
         })
         .returning('id')
         .execute()
+    
+    return deleteResult;
+}
+
+export async function deleteUserLogically (userID: number) {
+    const deleteResult = await db.updateTable('MedIQ.users')
+        .set({
+            is_active: false,
+            updated_at: new Date(Date.now())
+        })
+        .where('MedIQ.users.id', '=', userID)
+        .execute();
+    
+    return deleteResult;
+}
+
+export async function getUserData (userID: number) {
+    const deleteResult = await db.selectFrom('MedIQ.users')
+        .selectAll()
+        .where('MedIQ.users.id', '=', userID)
+        .execute();
     
     return deleteResult;
 }
