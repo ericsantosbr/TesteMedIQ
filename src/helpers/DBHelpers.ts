@@ -162,7 +162,9 @@ export async function deleteUserLogically (userID: number) {
             updated_at: new Date(Date.now())
         })
         .where('MedIQ.users.id', '=', userID)
-        .execute();
+        .returning(['id', 'is_active', 'updated_at'])
+        .execute()
+        .then((a) => {return a});
     
     return deleteResult;
 }

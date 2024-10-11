@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { getUserData } from "../helpers/DBHelpers";
-import { verifyAuthenticatedUser } from "../middlewares/Auth";
+import { deleteUserLogically, getUserData } from "../helpers/DBHelpers";
+import { verifyAdminAuthenticated, verifyAuthenticatedUser } from "../middlewares/Auth";
 
 type HonoVariables = {
     userID: number;
@@ -11,7 +11,7 @@ type HonoVariables = {
 
 export const app = new Hono<{ Variables: HonoVariables }>();
 
-app.get('/userData/:userID', verifyAuthenticatedUser, async (c) => {
+app.get('/userData/:userID{[0-9]+}', verifyAuthenticatedUser, async (c) => {
     const userID = Number(c.req.param('userID'));
 
     const userData = await getUserData(userID);
@@ -22,6 +22,22 @@ app.get('/userData/:userID', verifyAuthenticatedUser, async (c) => {
         (c.get('privileges') === 'MODERATOR' || c.get('privileges') === 'ADMIN')
     ) {
         result = userData[0];
+    } else {
+        return c.text('User not found', 404);
+    }
+
+    return c.json(result);
+});
+
+app.delete('/deleteUser/:userID{[0-9]+}', verifyAdminAuthenticated, async (c) => {
+    const userID = Number(c.req.param('userID'));
+    let result;
+
+    const userData = await getUserData(userID);
+    if (
+        (!!userData && userData.length > 0)
+    ) {
+        result = await deleteUserLogically(userID);
     } else {
         return c.text('User not found', 404);
     }

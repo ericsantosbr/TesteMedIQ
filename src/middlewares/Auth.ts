@@ -36,3 +36,18 @@ export const verifyAdminAuthenticated = bearerAuth({ verifyToken: async (token, 
 
     return false;
 }});
+
+export const verifyAdminOrModeratorAuthenticated = bearerAuth({ verifyToken: async (token, c) => {
+    const foundKeyData = await fetchBearerTokenFromAuthServer(token);
+    
+    // If left value is undefined or null, it evaluates to the value on its right
+    if (!!foundKeyData) {
+        const parsedFoundKeyData = JSON.parse(foundKeyData);
+
+        if (parsedFoundKeyData.privileges === 'ADMIN' || parsedFoundKeyData.privileges === 'MODERATOR') {
+            return true;
+        }
+    }
+
+    return false;
+}});
