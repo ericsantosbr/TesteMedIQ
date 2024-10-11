@@ -19,6 +19,7 @@
   "devDependencies": {
     "@types/node": "^20.11.17",
     "@types/pg": "^8.11.10",
+    "kysely-codegen": "^0.16.8",
     "tsx": "^4.7.1"
   }
 }

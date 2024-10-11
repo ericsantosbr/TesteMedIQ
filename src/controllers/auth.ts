@@ -13,10 +13,8 @@ AuthRouter.post('/', authenticateUser, (c, next) => {
     const bearerToken = c.get('userBearerToken');
 
     if (isUserAuthenticated) {
-
         return c.text('Bearer ' + bearerToken);
     } else {
-        
         return c.text('Auth failed', 401);
     }
 });

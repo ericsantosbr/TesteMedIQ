@@ -12,9 +12,6 @@ export const verifyAuthenticatedUser = bearerAuth({ verifyToken: async (token, c
     const redisHostname = process.env.REDIS_HOSTNAME;
     const redisPort = process.env.REDIS_PORT;
     const redisBearerLifetime = process.env.REDIS_BEARER_TOKEN_LIFETIME;
-
-    const redisURL = 'redis://' + (redisUser ? redisUser + ':' + redisPassword + '@' : '') + redisHostname + ':' + redisPort;
-
     
     const client = await createClient({
         url: 'redis://' + (redisUser ? redisUser + ':' + redisPassword + '@' : '') + redisHostname + ':' + redisPort
@@ -30,4 +27,4 @@ export const verifyAuthenticatedUser = bearerAuth({ verifyToken: async (token, c
     } else {
         return false;
     }
-}})
+}});

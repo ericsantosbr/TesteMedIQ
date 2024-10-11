@@ -12,7 +12,6 @@ services:
   
   database:
     env_file: ".env"
-    restart: always
     image: postgres:latest
     container_name: postgres_mediq
     volumes:
