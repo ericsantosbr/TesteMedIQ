@@ -1,7 +1,4 @@
-import { Context } from "hono";
-import { db } from "../database";
 import { bearerAuth } from "hono/bearer-auth";
-import { createClient } from "redis";
 import { config } from "dotenv";
 import { fetchBearerTokenFromAuthServer } from "../helpers/Auth";
 
