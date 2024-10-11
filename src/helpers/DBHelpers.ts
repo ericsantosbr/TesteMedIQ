@@ -23,13 +23,7 @@ export async function fetchUserAuthData (email: string) {
     const foundValue = await db.selectFrom('MedIQ.users')
         .select(['id', 'email', 'username', 'password'])
         .where('email', '=', email)
-        .execute()
-        .then((a) => {
-            console.log('Found Values: ');
-            console.debug(a);
-
-            return a;
-        });
+        .execute();
         
 
     return foundValue;
@@ -92,6 +86,7 @@ export async function uploadDiscussionPost (discussionPostData: DiscussionPostDa
             created_at: new Date(Date.now()).toISOString(),
             updated_at: new Date(Date.now()).toISOString()
         })
+        .returning(['id', 'message', 'created_at'])
         .execute();
 
     return uploadResult;
@@ -106,4 +101,25 @@ export async function getPostResponses (postID: number) {
         .execute();
 
     return foundValues;
+}
+
+export async function modifyPostResponse (postID: number, postMessage: string) {
+    const updateResult = await db.updateTable('MedIQ.discussion_posts')
+        .set({
+            message: postMessage,
+            updated_at: new Date(Date.now())
+        })
+        .where('MedIQ.discussion_posts.id', '=', postID)
+        .execute();
+
+    return updateResult;
+}
+
+export async function fetchPostResponse (postID: number) {
+    const searchResult = await db.selectFrom('MedIQ.discussion_posts')
+        .selectAll()
+        .where('MedIQ.discussion_posts.id', '=', postID)
+        .execute();
+
+    return searchResult;
 }
