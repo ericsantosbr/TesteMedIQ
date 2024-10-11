@@ -1,4 +1,4 @@
-import { DiscussionData, DiscussionPostData, getPostResponses, GroupData, uploadDiscussion, uploadDiscussionPost, uploadNewGroup } from "../helpers/DBHelpers";
+import { DiscussionData, DiscussionPostData, fetchPostResponse, getPostResponses, GroupData, modifyPostResponse, uploadDiscussion, uploadDiscussionPost, uploadNewGroup } from "../helpers/DBHelpers";
 import { Hono } from "hono";
 import { jsonDiscussionPostValidator, jsonDiscussionValidator } from "../helpers/Validators";
 import { verifyAuthenticatedUser } from "../middlewares/Auth";
@@ -28,12 +28,12 @@ app.post('/createPost', verifyAuthenticatedUser,jsonDiscussionValidator, async (
     return c.text('Teste', 200);
 });
 
-app.post('/createGroup/:groupName', async (c) => {
+app.post('/createGroup/:groupName', verifyAuthenticatedUser, async (c) => {
     const groupName = c.req.param('groupName');
 
     const groupData: GroupData = {
         name: groupName,
-        creatorID: 9
+        creatorID: Number(c.get('userID'))
     }
 
     const uploadResult = await uploadNewGroup(groupData);
@@ -50,6 +50,22 @@ app.get('/postResponses/:postID', async (c) => {
     return c.json(postResponses || []);
 });
 
+app.patch('/modifyPostResponse', verifyAuthenticatedUser, jsonDiscussionPostValidator, async (c) => {
+    const { requestBody } = c.req.valid('json');
+
+    const postResponseData = await fetchPostResponse(requestBody.postID);
+
+    let result;
+    if (!!postResponseData && postResponseData.length > 0 && postResponseData[0].user_id === Number(c.get('userID'))) {
+        result = modifyPostResponse(Number(requestBody.postID), requestBody.message);
+
+        return c.json(result);
+    } else {
+        return c.text('Post not found', 404);
+    }
+
+});
+
 app.post('/createPostResponse', verifyAuthenticatedUser, jsonDiscussionPostValidator, async(c) => {
     const { requestBody } = c.req.valid('json');
 
@@ -61,5 +77,5 @@ app.post('/createPostResponse', verifyAuthenticatedUser, jsonDiscussionPostValid
 
     const uploadResult = await uploadDiscussionPost(discussionData);
 
-    return c.text('Teste', 200);
+    return c.json(uploadResult, 200);
 });
