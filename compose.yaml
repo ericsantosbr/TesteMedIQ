@@ -1,5 +1,6 @@
 services:
   backend:
+    container_name: backend_mediq
     env_file:
       - ".env"
     image: node:latest
@@ -22,8 +23,6 @@ services:
 
   auth_database:
     image: eqalpha/keydb:latest
-    container_name: keydb
-    expose:
-      - 6379
+    container_name: keydb_mediq
     ports:
       - 6379:6379
