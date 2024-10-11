@@ -14,7 +14,24 @@ export interface UserData {
     password: string
 }
 
-async function uploadBearerTokenToAuthServer (key: string, value: string) {
+export async function fetchBearerTokenFromAuthServer (bearerToken: string) {
+    const redisUser = process.env.REDIS_USERNAME;
+    const redisPassword = process.env.REDIS_PASSWORD;
+    const redisHostname = process.env.REDIS_HOSTNAME;
+    const redisPort = process.env.REDIS_PORT;
+    
+    const client = await createClient({
+        url: 'redis://' + (redisUser ? redisUser + ':' + redisPassword + '@' : '') + redisHostname + ':' + redisPort
+    })
+    .on('error', err => console.debug(err))
+    .connect();
+    
+    const foundKey = await client.get(bearerToken);
+    
+    return foundKey;
+}
+
+export async function uploadBearerTokenToAuthServer (key: string, value: string) {
     const redisUser = process.env.REDIS_USERNAME;
     const redisPassword = process.env.REDIS_PASSWORD;
     const redisHostname = process.env.REDIS_HOSTNAME;
@@ -49,7 +66,8 @@ export const authenticateUser = basicAuth({verifyUser: async (username, password
             
             const bearerData = {
                 id: userFetchedData[0].id,
-                email: userFetchedData[0].email
+                email: userFetchedData[0].email,
+                username: userFetchedData[0].username
             }
             
             const bearerToken = uuidv4();

@@ -21,7 +21,7 @@ export interface GroupData {
 
 export async function fetchUserAuthData (email: string) {
     const foundValue = await db.selectFrom('MedIQ.users')
-        .select(['id', 'email', 'password'])
+        .select(['id', 'email', 'username', 'password'])
         .where('email', '=', email)
         .execute()
         .then((a) => {
@@ -95,4 +95,15 @@ export async function uploadDiscussionPost (discussionPostData: DiscussionPostDa
         .execute();
 
     return uploadResult;
+}
+
+export async function getPostResponses (postID: number) {
+    const foundValues = await db.selectFrom('MedIQ.discussion_posts')
+        .where('post_id', '=', postID)
+        .innerJoin('MedIQ.users', 'MedIQ.users.id', 'MedIQ.discussion_posts.user_id')
+        .select(['message', 'MedIQ.discussion_posts.created_at','MedIQ.users.username', 'MedIQ.users.email', 'MedIQ.users.id'])
+        .orderBy('MedIQ.discussion_posts.created_at', 'asc')
+        .execute();
+
+    return foundValues;
 }

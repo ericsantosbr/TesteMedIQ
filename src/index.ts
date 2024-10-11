@@ -7,14 +7,20 @@ import { app as DiscussionsRouter } from './controllers/discussions';
 
 config();
 
-const app = new Hono();
+type HonoVariables = {
+  userID: number;
+  userEmail: string;
+  username: string;
+}
+
+const app = new Hono<{ Variables: HonoVariables}>();
 
 app.notFound((c) => {
   return c.text('Resource not found', 404);
 });
 
 app.get('/', verifyAuthenticatedUser, (c) => {
-  return c.text('Hello Hono!')
+  return c.text(`Hello ${c.get('username')}!`);
 });
 
 app.route('/auth', AuthRouter);
