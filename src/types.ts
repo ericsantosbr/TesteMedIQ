@@ -24,6 +24,7 @@ export interface MedIQDiscussionPosts {
   updated_at: Timestamp | null;
   user_id: Generated<number>;
   post_id: Generated<number>;
+  is_active: Boolean;
 }
 
 export type DiscussionPost = Selectable<MedIQDiscussionPosts>;
@@ -38,6 +39,7 @@ export interface MedIQDiscussions {
   group_id: Generated<number>;
   title: string;
   updated_at: Timestamp;
+  is_active: Boolean;
 }
 
 export type Discussion = Selectable<MedIQDiscussions>;

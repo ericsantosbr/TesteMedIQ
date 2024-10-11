@@ -71,7 +71,8 @@ export async function uploadDiscussion (discussionData: DiscussionData) {
             owner_id: discussionData.ownerID,
             group_id: discussionData.groupID,
             created_at: new Date(Date.now()).toISOString(),
-            updated_at: new Date(Date.now()).toISOString()
+            updated_at: new Date(Date.now()).toISOString(),
+            is_active: true
         })
         .returning(['id', 'title', 'created_at', 'group_id'])
         .execute();
@@ -86,7 +87,8 @@ export async function uploadDiscussionPost (discussionPostData: DiscussionPostDa
             user_id: discussionPostData.ownerID,
             message: discussionPostData.message,
             created_at: new Date(Date.now()).toISOString(),
-            updated_at: new Date(Date.now()).toISOString()
+            updated_at: new Date(Date.now()).toISOString(),
+            is_active: true
         })
         .returning(['id', 'message', 'created_at'])
         .execute();
@@ -124,4 +126,30 @@ export async function fetchPostResponse (postID: number) {
         .execute();
 
     return searchResult;
+}
+
+export async function deletePostLogically (postID: number) {
+    const deleteResult = await db.updateTable('MedIQ.discussions')
+        .where('id', '=', postID)
+        .set({
+            is_active: false,
+            updated_at: new Date(Date.now())
+        })
+        .returning('id')
+        .execute()
+    
+    return deleteResult;
+}
+
+export async function deletePostResponseLogically (postID: number) {
+    const deleteResult = await db.updateTable('MedIQ.discussion_posts')
+        .where('id', '=', postID)
+        .set({
+            is_active: false,
+            updated_at: new Date(Date.now())
+        })
+        .returning('id')
+        .execute()
+    
+    return deleteResult;
 }

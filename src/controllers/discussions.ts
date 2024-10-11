@@ -1,4 +1,4 @@
-import { DiscussionData, DiscussionPostData, fetchPostResponse, getPostResponses, GroupData, modifyPostResponse, uploadDiscussion, uploadDiscussionPost, uploadNewGroup } from "../helpers/DBHelpers";
+import { deletePostLogically, deletePostResponseLogically, DiscussionData, DiscussionPostData, fetchPostResponse, getPostResponses, GroupData, modifyPostResponse, uploadDiscussion, uploadDiscussionPost, uploadNewGroup } from "../helpers/DBHelpers";
 import { Hono } from "hono";
 import { jsonDiscussionPostValidator, jsonDiscussionValidator } from "../helpers/Validators";
 import { verifyAdminAuthenticated, verifyAuthenticatedUser } from "../middlewares/Auth";
@@ -81,4 +81,38 @@ app.post('/createPostResponse', verifyAuthenticatedUser, jsonDiscussionPostValid
     const uploadResult = await uploadDiscussionPost(discussionData);
 
     return c.json(uploadResult, 200);
+});
+
+app.delete('/deletePostResponse/:postID', verifyAuthenticatedUser, async (c) => {
+    const postID = Number(c.req.param('postID'));
+    const postResponseData = await fetchPostResponse(postID);
+
+    let result;
+    if (
+        (!!postResponseData && postResponseData.length > 0 && postResponseData[0].user_id === Number(c.get('userID'))) ||
+        (c.get('privileges') === 'MODERATOR' || c.get('privileges') === 'ADMIN')
+    ) {
+        result = deletePostResponseLogically(postID);
+
+        return c.json(result);
+    } else {
+        return c.text('Post not found', 404);
+    }
+});
+
+app.delete('/deletePost/:postID', verifyAuthenticatedUser, async (c) => {
+    const postID = Number(c.req.param('postID'));
+    const postResponseData = await fetchPostResponse(postID);
+
+    let result;
+    if (
+        (!!postResponseData && postResponseData.length > 0 && postResponseData[0].user_id === Number(c.get('userID'))) ||
+        (c.get('privileges') === 'MODERATOR' || c.get('privileges') === 'ADMIN')
+    ) {
+        result = deletePostLogically(postID);
+
+        return c.json(result);
+    } else {
+        return c.text('Post not found', 404);
+    }
 });
