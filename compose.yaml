@@ -7,7 +7,7 @@ services:
     command: bash -c "npm install && npm run dev"
     working_dir: /home/node/app
     ports:
-      - 127.0.0.1:8355:8355
+      - 8355:8355
     volumes:
       - .:/home/node/app
   
