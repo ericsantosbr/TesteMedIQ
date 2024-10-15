@@ -1,4 +1,4 @@
-import { deletePostLogically, deletePostResponseLogically, DiscussionData, DiscussionPostData, fetchPostResponse, getPostResponses, GroupData, modifyPostResponse, uploadDiscussion, uploadDiscussionPost, uploadNewGroup } from "../helpers/DBHelpers";
+import { deletePostLogically, deletePostResponseLogically, DiscussionData, DiscussionPostData, fetchPostResponse, getPost, getPostResponses, GroupData, modifyPostResponse, uploadDiscussion, uploadDiscussionPost, uploadNewGroup } from "../helpers/DBHelpers";
 import { Hono } from "hono";
 import { jsonDiscussionPostValidator, jsonDiscussionValidator } from "../helpers/Validators";
 import { verifyAdminAuthenticated, verifyAuthenticatedUser } from "../middlewares/Auth";
@@ -11,6 +11,24 @@ type HonoVariables = {
   }
 
 export const app = new Hono<{ Variables: HonoVariables }>();
+
+app.get('/getPost/:id', async (c) => {
+    const postID = Number(c.req.param('id'));
+
+    try {
+        const fetchResponse = await getPost(postID);
+
+        if (!!fetchResponse && fetchResponse.length > 0) {
+            const postResponses = await getPostResponses(postID);
+            const responseWithMessages = {...fetchResponse[0], responses: postResponses.length > 0 ? postResponses : []}
+            return c.json(responseWithMessages);
+        } else {
+            return c.text('Post not found', 404);
+        }
+    } catch (e) {
+        return c.text('Fetch could not be completed', 500);
+    }
+});
 
 app.post('/createPost', verifyAuthenticatedUser,jsonDiscussionValidator, async (c) => {
     const { requestBody } = c.req.valid('json');

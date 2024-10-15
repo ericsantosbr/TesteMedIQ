@@ -97,6 +97,15 @@ export async function uploadDiscussionPost (discussionPostData: DiscussionPostDa
     return uploadResult;
 }
 
+export async function getPost (postID: number) {
+    const foundPost = await db.selectFrom('MedIQ.discussions')
+        .where('id', '=', postID)
+        .selectAll()
+        .execute() || null;
+    
+    return foundPost;
+}
+
 export async function getPostResponses (postID: number) {
     const foundValues = await db.selectFrom('MedIQ.discussion_posts')
         .where('post_id', '=', postID)
@@ -104,6 +113,8 @@ export async function getPostResponses (postID: number) {
         .select(['message', 'MedIQ.discussion_posts.created_at','MedIQ.users.username', 'MedIQ.users.email', 'MedIQ.users.id'])
         .orderBy('MedIQ.discussion_posts.created_at', 'asc')
         .execute();
+    
+    console.debug(foundValues);
 
     return foundValues;
 }
