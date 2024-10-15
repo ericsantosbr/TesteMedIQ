@@ -107,14 +107,57 @@ export async function getPost (postID: number) {
 }
 
 export async function getPostResponses (postID: number) {
-    const foundValues = await db.selectFrom('MedIQ.discussion_posts')
+    const foundValues = db.selectFrom('MedIQ.discussion_posts')
         .where('post_id', '=', postID)
         .innerJoin('MedIQ.users', 'MedIQ.users.id', 'MedIQ.discussion_posts.user_id')
-        .select(['message', 'MedIQ.discussion_posts.created_at','MedIQ.users.username', 'MedIQ.users.email', 'MedIQ.users.id'])
+        .select(['MedIQ.discussion_posts.id', 'message', 'MedIQ.discussion_posts.created_at','MedIQ.users.username', 'MedIQ.users.email', 'MedIQ.users.id as user_id'])
+        .select(({ selectFrom }) => [
+            selectFrom('MedIQ.reactions')
+                .select(({fn}) => [
+                    fn.count<number>('MedIQ.reactions.reaction').as('reactions')
+                ])
+                .whereRef('MedIQ.reactions.post_id', '=', 'MedIQ.discussion_posts.id')
+                .where('MedIQ.reactions.reaction', '=', 'LIKE')
+                .as('likes_count')
+        ])
+        .select(({ selectFrom }) => [
+            selectFrom('MedIQ.reactions')
+                .select(({fn}) => [
+                    fn.count<number>('MedIQ.reactions.reaction').as('reactions')
+                ])
+                .whereRef('MedIQ.reactions.post_id', '=', 'MedIQ.discussion_posts.id')
+                .where('MedIQ.reactions.reaction', '=', 'DISLIKE')
+                .as('dislike_count')
+        ])
+        .select(({ selectFrom }) => [
+            selectFrom('MedIQ.reactions')
+                .select(({fn}) => [
+                    fn.count<number>('MedIQ.reactions.reaction').as('reactions')
+                ])
+                .whereRef('MedIQ.reactions.post_id', '=', 'MedIQ.discussion_posts.id')
+                .where('MedIQ.reactions.reaction', '=', 'SUPPORT')
+                .as('support_count')
+        ])
+        .select(({ selectFrom }) => [
+            selectFrom('MedIQ.reactions')
+                .select(({fn}) => [
+                    fn.count<number>('MedIQ.reactions.reaction').as('reactions')
+                ])
+                .whereRef('MedIQ.reactions.post_id', '=', 'MedIQ.discussion_posts.id')
+                .where('MedIQ.reactions.reaction', '=', 'HEART')
+                .as('heart_count')
+        ])
+        .select(({ selectFrom }) => [
+            selectFrom('MedIQ.reactions')
+                .select(({fn}) => [
+                    fn.count<number>('MedIQ.reactions.reaction').as('reactions')
+                ])
+                .whereRef('MedIQ.reactions.post_id', '=', 'MedIQ.discussion_posts.id')
+                .where('MedIQ.reactions.reaction', '=', 'HAHA')
+                .as('haha_count')
+        ])
         .orderBy('MedIQ.discussion_posts.created_at', 'asc')
         .execute();
-    
-    console.debug(foundValues);
 
     return foundValues;
 }

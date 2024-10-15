@@ -73,9 +73,22 @@ export type Group = Selectable<MedIQGroups>;
 export type NewGroup = Insertable<MedIQGroups>;
 export type GroupUpdate = Updateable<MedIQGroups>;
 
+export interface MedIQReactions {
+  reacted_at: Timestamp;
+  id: Generated<number>;
+  user_id: Generated<number>;
+  post_id: Generated<number>;
+  reaction: string;
+}
+
+export type Reaction = Selectable<MedIQReactions>;
+export type NewReaction = Insertable<MedIQReactions>;
+export type ReactionUpdate = Updateable<MedIQReactions>;
+
 export interface DB {
   "MedIQ.discussion_posts": MedIQDiscussionPosts;
   "MedIQ.discussions": MedIQDiscussions;
   "MedIQ.users": MedIQUsers;
   "MedIQ.groups": MedIQGroups;
+  "MedIQ.reactions": MedIQReactions;
 }
