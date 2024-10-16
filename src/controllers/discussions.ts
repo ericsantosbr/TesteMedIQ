@@ -1,6 +1,6 @@
-import { deletePostLogically, deletePostResponseLogically, DiscussionData, DiscussionPostData, fetchPostResponse, getPost, getPostResponses, GroupData, modifyPostResponse, uploadDiscussion, uploadDiscussionPost, uploadNewGroup } from "../helpers/DBHelpers";
+import { deletePostLogically, deletePostResponseLogically, DiscussionData, DiscussionPostData, fetchPostResponse, getPost, getPostResponses, GroupData, modifyPostResponse, ReactionData, uploadDiscussion, uploadDiscussionPost, uploadNewGroup, uploadReaction } from "../helpers/DBHelpers";
 import { Hono } from "hono";
-import { jsonDiscussionPostValidator, jsonDiscussionValidator } from "../helpers/Validators";
+import { jsonDiscussionPostValidator, jsonDiscussionValidator, jsonReactionValidator } from "../helpers/Validators";
 import { verifyAdminAuthenticated, verifyAuthenticatedUser } from "../middlewares/Auth";
 
 type HonoVariables = {
@@ -133,4 +133,25 @@ app.delete('/deletePost/:postID', verifyAuthenticatedUser, async (c) => {
     } else {
         return c.text('Post not found', 404);
     }
+});
+
+app.post('/uploadReaction', verifyAuthenticatedUser, jsonReactionValidator, async (c) => {
+    const { requestBody } = c.req.valid('json');
+    const userID = c.get('userID');
+
+    const reactionData: ReactionData = {
+        postID: Number(requestBody['post_id']),
+        userID: userID,
+        reaction: requestBody.reaction
+    }
+
+    let uploadResult;
+    try {
+        uploadResult = await uploadReaction(reactionData);
+    } catch (e) {
+        console.debug(e);
+        c.text('Error uploading reaction.', 500);
+    }
+
+    return c.json(uploadResult);
 });

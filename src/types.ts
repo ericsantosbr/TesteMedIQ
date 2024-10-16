@@ -74,7 +74,7 @@ export type NewGroup = Insertable<MedIQGroups>;
 export type GroupUpdate = Updateable<MedIQGroups>;
 
 export interface MedIQReactions {
-  reacted_at: Timestamp;
+  reacted_at?: Timestamp;
   id: Generated<number>;
   user_id: Generated<number>;
   post_id: Generated<number>;

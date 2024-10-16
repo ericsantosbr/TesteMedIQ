@@ -17,6 +17,12 @@ export interface DiscussionPostData {
 export interface GroupData {
     creatorID: number,
     name: string,
+};
+
+export interface ReactionData {
+    postID: number,
+    userID: number,
+    reaction: string
 }
 
 export async function fetchUserAuthData (email: string) {
@@ -160,6 +166,24 @@ export async function getPostResponses (postID: number) {
         .execute();
 
     return foundValues;
+}
+
+export async function uploadReaction (reactionData: ReactionData) {
+    const uploadResult = await db.insertInto('MedIQ.reactions')
+        .values({
+            user_id: reactionData.userID,
+            post_id: reactionData.postID,
+            reaction: reactionData.reaction
+        })
+        .onConflict((oc) => oc
+            .column('post_id')
+            .column('user_id')
+            .doUpdateSet({reaction: reactionData.reaction})
+        )
+        .returning(['id', 'post_id', 'reaction', 'reacted_at', 'user_id'])
+        .execute();
+
+    return uploadResult;
 }
 
 export async function modifyPostResponse (postID: number, postMessage: string) {
