@@ -1,6 +1,6 @@
-import { deletePostLogically, deletePostResponseLogically, DiscussionData, DiscussionPostData, fetchPostResponse, getPost, getPostResponses, GroupData, modifyPostResponse, uploadDiscussion, uploadDiscussionPost, uploadNewGroup } from "../helpers/DBHelpers";
+import { deletePostLogically, deletePostResponseLogically, DiscussionData, DiscussionPostData, fetchPostResponse, getPost, getPostResponses, getReactionData, GroupData, modifyPostResponse, ReactionData, removeReaction, uploadDiscussion, uploadDiscussionPost, uploadNewGroup, uploadReaction } from "../helpers/DBHelpers";
 import { Hono } from "hono";
-import { jsonDiscussionPostValidator, jsonDiscussionValidator } from "../helpers/Validators";
+import { jsonDiscussionPostValidator, jsonDiscussionValidator, jsonReactionValidator } from "../helpers/Validators";
 import { verifyAdminAuthenticated, verifyAuthenticatedUser } from "../middlewares/Auth";
 
 type HonoVariables = {
@@ -132,5 +132,50 @@ app.delete('/deletePost/:postID', verifyAuthenticatedUser, async (c) => {
         return c.json(result);
     } else {
         return c.text('Post not found', 404);
+    }
+});
+
+app.post('/uploadReaction', verifyAuthenticatedUser, jsonReactionValidator, async (c) => {
+    const { requestBody } = c.req.valid('json');
+    const userID = c.get('userID');
+
+    const reactionData: ReactionData = {
+        postID: Number(requestBody['post_id']),
+        userID: userID,
+        reaction: requestBody.reaction
+    }
+
+    let uploadResult;
+    try {
+        uploadResult = await uploadReaction(reactionData);
+    } catch (e) {
+        console.debug(e);
+        c.text('Error uploading reaction.', 500);
+    }
+
+    return c.json(uploadResult);
+});
+
+app.delete('/removeReaction/:reactionID', verifyAuthenticatedUser, async (c) => {
+    const reactionID = Number(c.req.param('reactionID'));
+    const reactData = await getReactionData(reactionID)
+
+    if (
+        (!!reactData && reactData.length > 0 && reactData[0].user_id === Number(c.get('userID'))) ||
+        (c.get('privileges') === 'MODERATOR' || c.get('privileges') === 'ADMIN')) {
+        try {
+            const removeResult = await removeReaction(reactionID);
+
+            if (!!removeResult) {
+                return c.json(removeResult)
+            } else {
+                return c.text('Reaction not found', 404);
+            }
+        } catch (e) {
+            console.debug(e);
+            return c.text('Error trying to delete reaction', 500);
+        }
+    } else {
+        return c.text('Reaction does not exist', 404);
     }
 });

@@ -1,4 +1,5 @@
 import { validator } from "hono/validator";
+import { reactionTypes } from "../config";
 
 export const jsonDiscussionValidator = validator('json', (value, c) => {
     const title = value['title'];
@@ -32,6 +33,27 @@ export const jsonDiscussionPostValidator = validator('json', (value, c) => {
     
     if (!postID || typeof postID !== 'string') {
         return c.text('Missing field \'postID\'', 400)
+    }
+
+    return {
+        requestBody: value
+    }
+});
+
+// This validator assumes user is already logged in on route
+export const jsonReactionValidator = validator('json',(value, c) => {
+    const postID = value['post_id'];
+    const reaction = value['reaction'];
+
+    if (!postID || typeof postID !== 'string') {
+        return c.text('Missing field \'post_id\'', 400);
+    }
+    if (!reaction || typeof reaction !== 'string') {
+        return c.text('Missing field \'reaction\'', 400);
+    }
+
+    if (reactionTypes.indexOf(reaction) === -1) {
+        return c.text('\'reaction\' not supported', 400);
     }
 
     return {

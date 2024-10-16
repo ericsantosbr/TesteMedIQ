@@ -214,6 +214,44 @@ ALTER SEQUENCE "MedIQ".newtable_owner_id_seq OWNED BY "MedIQ".discussions.owner_
 
 
 --
+-- Name: reactions; Type: TABLE; Schema: MedIQ; Owner: postgres
+--
+
+CREATE TABLE "MedIQ".reactions (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    reaction character varying NOT NULL,
+    post_id integer NOT NULL,
+    reacted_at timestamp without time zone DEFAULT now(),
+    CONSTRAINT reaction_type_check CHECK ((((reaction)::text = 'LIKE'::text) OR ((reaction)::text = 'DISLIKE'::text) OR ((reaction)::text = 'HEART'::text) OR ((reaction)::text = 'HAHA'::text) OR ((reaction)::text = 'SUPPORT'::text)))
+);
+
+
+ALTER TABLE "MedIQ".reactions OWNER TO postgres;
+
+--
+-- Name: reactions_id_seq; Type: SEQUENCE; Schema: MedIQ; Owner: postgres
+--
+
+CREATE SEQUENCE "MedIQ".reactions_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE "MedIQ".reactions_id_seq OWNER TO postgres;
+
+--
+-- Name: reactions_id_seq; Type: SEQUENCE OWNED BY; Schema: MedIQ; Owner: postgres
+--
+
+ALTER SEQUENCE "MedIQ".reactions_id_seq OWNED BY "MedIQ".reactions.id;
+
+
+--
 -- Name: users; Type: TABLE; Schema: MedIQ; Owner: postgres
 --
 
@@ -283,6 +321,13 @@ ALTER TABLE ONLY "MedIQ".groups ALTER COLUMN id SET DEFAULT nextval('"MedIQ".gro
 
 
 --
+-- Name: reactions id; Type: DEFAULT; Schema: MedIQ; Owner: postgres
+--
+
+ALTER TABLE ONLY "MedIQ".reactions ALTER COLUMN id SET DEFAULT nextval('"MedIQ".reactions_id_seq'::regclass);
+
+
+--
 -- Name: users id; Type: DEFAULT; Schema: MedIQ; Owner: postgres
 --
 
@@ -305,8 +350,8 @@ COPY "MedIQ".discussion_posts (id, message, created_at, updated_at, user_id, pos
 --
 
 COPY "MedIQ".discussions (id, title, created_at, updated_at, message, owner_id, group_id, is_active) FROM stdin;
-5	título	2024-10-11 01:30:53.707	2024-10-11 01:30:53.707	boa tarde amigos	9	1	t
 6	título	2024-10-11 06:03:52.212	2024-10-11 06:09:08.192	Post do moderador aqui amigos	36	1	f
+5	título	2024-10-11 01:30:53.707	2024-10-14 14:38:48.23	boa tarde amigos	9	1	t
 \.
 
 
@@ -320,6 +365,19 @@ COPY "MedIQ".groups (id, name, updated_at, created_at, creator_id, is_active) FR
 
 
 --
+-- Data for Name: reactions; Type: TABLE DATA; Schema: MedIQ; Owner: postgres
+--
+
+COPY "MedIQ".reactions (id, user_id, reaction, post_id, reacted_at) FROM stdin;
+6	9	LIKE	11	2024-10-15 13:03:18.812154
+7	2	LIKE	11	2024-10-15 13:03:18.812154
+8	36	HAHA	11	2024-10-15 13:03:18.812154
+9	37	DISLIKE	11	2024-10-15 13:03:18.812154
+10	3	LIKE	11	2024-10-15 13:05:30.020319
+\.
+
+
+--
 -- Data for Name: users; Type: TABLE DATA; Schema: MedIQ; Owner: postgres
 --
 
@@ -329,8 +387,8 @@ COPY "MedIQ".users (id, email, username, password, created_at, updated_at, is_ac
 36	moderator@user	moderator	$2b$12$PI2DLMgdmlsYanHfWhTV6.QEGb6PPmX2umBVqx5Sdholy41oZKJmO	2024-10-11 05:08:53.886	2024-10-11 05:08:53.886	t	MODERATOR
 2	ericc@santos	ericc	ericc	2024-10-10 01:05:00	2024-10-10 01:05:00	t	USER
 37	admin@user	admin	$2b$12$9FZkM5c7BbO0HFXn0FL9.emCbRIk8qF6c0Fol7jAJiH6tPGY5eMGy	2024-10-11 13:35:59.058	2024-10-11 13:35:59.058	t	ADMIN
-1	eric@santos	ericsantos	1234	2024-10-10 01:05:00	2024-10-11 13:37:07.07	f	USER
-3	erricc@santos	erricc	ericc	2024-10-10 01:05:00	2024-10-11 13:38:55.119	f	USER
+1	eric@santos	ericsantos	1234	2024-10-10 01:05:00	2024-10-11 13:37:07.07	t	USER
+3	erricc@santos	erricc	ericc	2024-10-10 01:05:00	2024-10-11 13:38:55.119	t	USER
 \.
 
 
@@ -377,6 +435,13 @@ SELECT pg_catalog.setval('"MedIQ".newtable_owner_id_seq', 1, false);
 
 
 --
+-- Name: reactions_id_seq; Type: SEQUENCE SET; Schema: MedIQ; Owner: postgres
+--
+
+SELECT pg_catalog.setval('"MedIQ".reactions_id_seq', 10, true);
+
+
+--
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: MedIQ; Owner: postgres
 --
 
@@ -405,6 +470,14 @@ ALTER TABLE ONLY "MedIQ".groups
 
 ALTER TABLE ONLY "MedIQ".discussions
     ADD CONSTRAINT newtable_pk PRIMARY KEY (id);
+
+
+--
+-- Name: reactions reactions_pk; Type: CONSTRAINT; Schema: MedIQ; Owner: postgres
+--
+
+ALTER TABLE ONLY "MedIQ".reactions
+    ADD CONSTRAINT reactions_pk PRIMARY KEY (id);
 
 
 --
@@ -469,6 +542,22 @@ ALTER TABLE ONLY "MedIQ".groups
 
 ALTER TABLE ONLY "MedIQ".discussions
     ADD CONSTRAINT newtable_users_fk FOREIGN KEY (owner_id) REFERENCES "MedIQ".users(id);
+
+
+--
+-- Name: reactions reactions_discussion_posts_fk; Type: FK CONSTRAINT; Schema: MedIQ; Owner: postgres
+--
+
+ALTER TABLE ONLY "MedIQ".reactions
+    ADD CONSTRAINT reactions_discussion_posts_fk FOREIGN KEY (post_id) REFERENCES "MedIQ".discussion_posts(id);
+
+
+--
+-- Name: reactions reactions_users_fk; Type: FK CONSTRAINT; Schema: MedIQ; Owner: postgres
+--
+
+ALTER TABLE ONLY "MedIQ".reactions
+    ADD CONSTRAINT reactions_users_fk FOREIGN KEY (user_id) REFERENCES "MedIQ".users(id);
 
 
 --

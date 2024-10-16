@@ -17,6 +17,12 @@ export interface DiscussionPostData {
 export interface GroupData {
     creatorID: number,
     name: string,
+};
+
+export interface ReactionData {
+    postID: number,
+    userID: number,
+    reaction: string
 }
 
 export async function fetchUserAuthData (email: string) {
@@ -107,16 +113,96 @@ export async function getPost (postID: number) {
 }
 
 export async function getPostResponses (postID: number) {
-    const foundValues = await db.selectFrom('MedIQ.discussion_posts')
+    const foundValues = db.selectFrom('MedIQ.discussion_posts')
         .where('post_id', '=', postID)
         .innerJoin('MedIQ.users', 'MedIQ.users.id', 'MedIQ.discussion_posts.user_id')
-        .select(['message', 'MedIQ.discussion_posts.created_at','MedIQ.users.username', 'MedIQ.users.email', 'MedIQ.users.id'])
+        .select(['MedIQ.discussion_posts.id', 'message', 'MedIQ.discussion_posts.created_at','MedIQ.users.username', 'MedIQ.users.email', 'MedIQ.users.id as user_id'])
+        .select(({ selectFrom }) => [
+            selectFrom('MedIQ.reactions')
+                .select(({fn}) => [
+                    fn.count<number>('MedIQ.reactions.reaction').as('reactions')
+                ])
+                .whereRef('MedIQ.reactions.post_id', '=', 'MedIQ.discussion_posts.id')
+                .where('MedIQ.reactions.reaction', '=', 'LIKE')
+                .as('likes_count')
+        ])
+        .select(({ selectFrom }) => [
+            selectFrom('MedIQ.reactions')
+                .select(({fn}) => [
+                    fn.count<number>('MedIQ.reactions.reaction').as('reactions')
+                ])
+                .whereRef('MedIQ.reactions.post_id', '=', 'MedIQ.discussion_posts.id')
+                .where('MedIQ.reactions.reaction', '=', 'DISLIKE')
+                .as('dislike_count')
+        ])
+        .select(({ selectFrom }) => [
+            selectFrom('MedIQ.reactions')
+                .select(({fn}) => [
+                    fn.count<number>('MedIQ.reactions.reaction').as('reactions')
+                ])
+                .whereRef('MedIQ.reactions.post_id', '=', 'MedIQ.discussion_posts.id')
+                .where('MedIQ.reactions.reaction', '=', 'SUPPORT')
+                .as('support_count')
+        ])
+        .select(({ selectFrom }) => [
+            selectFrom('MedIQ.reactions')
+                .select(({fn}) => [
+                    fn.count<number>('MedIQ.reactions.reaction').as('reactions')
+                ])
+                .whereRef('MedIQ.reactions.post_id', '=', 'MedIQ.discussion_posts.id')
+                .where('MedIQ.reactions.reaction', '=', 'HEART')
+                .as('heart_count')
+        ])
+        .select(({ selectFrom }) => [
+            selectFrom('MedIQ.reactions')
+                .select(({fn}) => [
+                    fn.count<number>('MedIQ.reactions.reaction').as('reactions')
+                ])
+                .whereRef('MedIQ.reactions.post_id', '=', 'MedIQ.discussion_posts.id')
+                .where('MedIQ.reactions.reaction', '=', 'HAHA')
+                .as('haha_count')
+        ])
         .orderBy('MedIQ.discussion_posts.created_at', 'asc')
         .execute();
-    
-    console.debug(foundValues);
 
     return foundValues;
+}
+
+// This action relies on a unique constraint rule in the database, that defines that no entry should have duplicated both 'post_id' and 'user_id' from another entry. Or else, it will update the other entry.
+export async function uploadReaction (reactionData: ReactionData) {
+    const uploadResult = await db.insertInto('MedIQ.reactions')
+        .values({
+            user_id: reactionData.userID,
+            post_id: reactionData.postID,
+            reaction: reactionData.reaction
+        })
+        .onConflict((oc) => oc
+            .column('post_id')
+            .column('user_id')
+            .doUpdateSet({reaction: reactionData.reaction})
+        )
+        .returning(['id', 'post_id', 'reaction', 'reacted_at', 'user_id'])
+        .execute();
+
+    return uploadResult;
+}
+
+export async function getReactionData (reactionID: number) {
+    const reactionData = await db.selectFrom('MedIQ.reactions')
+        .selectAll()
+        .where('id', '=', reactionID)
+        .execute();
+    
+    return reactionData;
+}
+
+export async function removeReaction (reactionID: number) {
+    const removeResult = await db.deleteFrom('MedIQ.reactions')
+        .where('id', '=', reactionID)
+        .returningAll()
+        .executeTakeFirst();
+    
+    return removeResult;
 }
 
 export async function modifyPostResponse (postID: number, postMessage: string) {
