@@ -67,6 +67,7 @@ export interface MedIQGroups {
     creator_id: number;
     updated_at: Timestamp;
     name: string;
+    is_active: boolean;
 }
 
 export type Group = Selectable<MedIQGroups>;

@@ -45,21 +45,6 @@ app.post('/createPost', verifyAuthenticatedUser,jsonDiscussionValidator, async (
     return c.json(uploadResult, 200);
 });
 
-// Only admins can create new discussion groups
-app.post('/createGroup/:groupName', verifyAdminAuthenticated, async (c) => {
-    const groupName = c.req.param('groupName');
-
-    const groupData: GroupData = {
-        name: groupName,
-        creatorID: Number(c.get('userID'))
-    }
-
-    const uploadResult = await uploadNewGroup(groupData);
-    console.debug(uploadResult);
-    
-    return c.text('Teste', 200);
-});
-
 app.get('/postResponses/:postID', async (c) => {
     const postID = Number(c.req.param('postID'));
 

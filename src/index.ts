@@ -5,6 +5,7 @@ import { verifyAuthenticatedUser } from './middlewares/Auth';
 import { AuthRouter } from './controllers/auth';
 import { app as DiscussionsRouter } from './controllers/discussions';
 import { app as UsersRouter } from './controllers/users';
+import { app as GroupsRouter } from './controllers/groups';
 
 config();
 
@@ -27,6 +28,7 @@ app.get('/', verifyAuthenticatedUser, (c) => {
 app.route('/auth', AuthRouter);
 app.route('/posts', DiscussionsRouter);
 app.route('/users', UsersRouter);
+app.route('/groups', GroupsRouter);
 
 const port = Number(process.env.ENGINE_PORT) || 3000;
 
