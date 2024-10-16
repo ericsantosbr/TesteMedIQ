@@ -60,12 +60,11 @@ export async function uploadNewGroup (groupData: GroupData) {
             creator_id: groupData.creatorID,
             name: groupData.name,
             created_at: new Date(Date.now()).toISOString(),
-            updated_at: new Date(Date.now()).toISOString()
+            updated_at: new Date(Date.now()).toISOString(),
+            is_active: true
         })
-        .execute()
-        .catch((e) => {
-            return e;
-        });
+        .returningAll()
+        .execute();
     
     return uploadResult;
 }
@@ -273,4 +272,24 @@ export async function getUserData (userID: number) {
         .execute();
     
     return deleteResult;
+}
+
+export async function listGroups () {
+    const searchResult = await db.selectFrom('MedIQ.groups')
+        .selectAll()
+        .where('is_active', '=', true)
+        .execute();
+    
+    return searchResult;    
+}
+
+export async function listGroupPostings (groupID: number) {
+    const searchResult = await db.selectFrom('MedIQ.discussions')
+        .where('group_id', '=', groupID)
+        .innerJoin('MedIQ.users', 'MedIQ.users.id', 'MedIQ.discussions.owner_id') 
+        .select(['MedIQ.discussions.id', 'title', 'message', 'MedIQ.discussions.created_at', 'MedIQ.discussions.updated_at', 'MedIQ.users.email as creator_email', 'MedIQ.users.username as user'])
+        .orderBy('MedIQ.discussions.updated_at asc')
+        .execute();
+    
+    return searchResult;
 }
