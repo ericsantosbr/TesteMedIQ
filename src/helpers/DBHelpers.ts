@@ -168,6 +168,7 @@ export async function getPostResponses (postID: number) {
     return foundValues;
 }
 
+// This action relies on a unique constraint rule in the database, that defines that no entry should have duplicated both 'post_id' and 'user_id' from another entry. Or else, it will update the other entry.
 export async function uploadReaction (reactionData: ReactionData) {
     const uploadResult = await db.insertInto('MedIQ.reactions')
         .values({
@@ -184,6 +185,24 @@ export async function uploadReaction (reactionData: ReactionData) {
         .execute();
 
     return uploadResult;
+}
+
+export async function getReactionData (reactionID: number) {
+    const reactionData = await db.selectFrom('MedIQ.reactions')
+        .selectAll()
+        .where('id', '=', reactionID)
+        .execute();
+    
+    return reactionData;
+}
+
+export async function removeReaction (reactionID: number) {
+    const removeResult = await db.deleteFrom('MedIQ.reactions')
+        .where('id', '=', reactionID)
+        .returningAll()
+        .executeTakeFirst();
+    
+    return removeResult;
 }
 
 export async function modifyPostResponse (postID: number, postMessage: string) {
